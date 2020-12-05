@@ -13,9 +13,11 @@ use App\Http\Controllers\LanguageController;
 
 
 // Route url
-Route::get('/', 'DashboardController@ecommerce_shop');
+Route::get('/', 'EcommerceAppController@ecommerce_shop');
 
 Route::get('/app-ecommerce-shop', 'EcommerceAppController@ecommerce_shop');
+Route::post('/ecommerce-products', 'EcommerceAppController@products');
+
 Route::get('/app-ecommerce-checkout', 'EcommerceAppController@ecommerce_checkout');
 
 

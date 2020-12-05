@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Repository\ShopRepository;
 
 class EcommerceAppController extends Controller
 {
@@ -13,14 +14,25 @@ class EcommerceAppController extends Controller
           'bodyClass' => 'ecommerce-application',
       ];
 
-      $breadcrumbs = [
-          ['link'=>"dashboard-analytics",'name'=>"Home"],['link'=>"dashboard-analytics",'name'=>"eCommerce"], ['name'=>"Shop"]
-      ];
+      $breadcrumbs = [];
 
-      return view('/pages/app-ecommerce-shop', [
-          'pageConfigs' => $pageConfigs,
-          'breadcrumbs' => $breadcrumbs
-      ]);
+      $shopRep = new ShopRepository;
+      $productRep = $shopRep->getProducts();
+      if ($productRep['statut'] != 'err') {
+        return view('/pages/app-ecommerce-shop', [
+            'pageConfigs' => $pageConfigs,
+            'breadcrumbs' => $breadcrumbs,
+            'products' => $productRep['products'],
+            'categories' => $productRep['categories']
+        ]);
+      } else return $productRep;
+      
+    }
+    
+    public function products(Request $req) {
+        $data = $req->all();
+        $shopRep = new ShopRepository;
+        return $shopRep->getProductsWithFilter($data);      
     }
 
     // Ecommerce Details

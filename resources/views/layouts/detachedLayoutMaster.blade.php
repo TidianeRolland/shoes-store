@@ -39,7 +39,6 @@ $configData = Helper::applClasses();
         <div class="header-navbar-shadow"></div>
 
         {{-- Include Navbar --}}
-        @include('panels.navbar')
 
         <div class="content-wrapper">
             {{-- Include Breadcrumb --}}
@@ -62,11 +61,6 @@ $configData = Helper::applClasses();
     </div>
     <!-- End: Content-->
 
-    @if($configData['blankPage'] == false)
-    @include('pages/customizer')
-
-    @include('pages/buy-now')
-    @endif
 
     <div class="sidenav-overlay"></div>
     <div class="drag-target"></div>

@@ -9,6 +9,8 @@
 $(document).ready(function () {
   "use strict";
 
+  $.ajaxSetup({headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}});
+
   // RTL Support
   var direction = 'ltr';
   if ($('html').data('textdirection') == 'rtl') {
@@ -176,6 +178,30 @@ $(document).ready(function () {
   $(".remove-wishlist , .move-cart").on("click", function () {
     $(this).closest(".ecommerce-card").remove();
   })
+
+  // filter per categorie
+  $('input[type=radio][name="category-filter"]').change(function() {
+    refreshCardItem();
+  });
+  
+  $('#ecommerce-price-options').change(function() {
+    refreshCardItem();
+  });
+
+  //setup before functions
+  let typingTimer;                //timer identifier
+  let doneTypingInterval = 3000;  //time in ms, 5 second for example
+  let $searchInput = $('#searchInput');
+
+  $searchInput.on("input", function () {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(refreshCardItem, doneTypingInterval);
+  });
+  
+  $searchInput.on("keydown", function () {
+    clearTimeout(typingTimer);
+  });
+
 })
 // on window resize hide sidebar
 $(window).on("resize", function () {
@@ -184,3 +210,77 @@ $(window).on("resize", function () {
     $(".shop-content-overlay").removeClass("show");
   }
 });
+
+function refreshCardItem() {
+  let categorie_id = $('input[type=radio][name="category-filter"]:checked').val();
+  let priceOptions = $('#ecommerce-price-options').val();
+  let searchStr = $('#searchInput').val();
+
+
+    $.post("/ecommerce-products", {categorie_id, priceOptions, searchStr}, function(data, status) {
+      // err
+      if (data.statut == 'err') {
+        toastr.error(data.msg, 'Erreur!');
+      }
+      // success
+      if (data.statut == 'success') {
+        updateCardItem(data.products);
+      }
+    });
+}
+
+function updateCardItem(data) {
+  $('#ecommerce-products').empty();
+  for (let id = 0; id < data.length; id++) {
+    const item = data[id];
+    createCardItem(item);
+  }
+}
+
+function createCardItem(item) {
+  let html = `
+    <div class="card ecommerce-card">
+      <div class="card-content">
+        <div class="item-img text-center">
+          <img class="img-fluid" src="${item.image}" alt="img-placeholder">
+        </div>
+        <div class="card-body">
+          <div class="item-wrapper">
+            <div class="item-rating">
+            </div>
+          <div>
+            <h6 class="item-price">
+            ${item.price} ${item.currency}
+            </h6>
+          </div>
+        </div>
+        <div class="item-name">
+          <span> ${item.name} </span>
+          <p class="item-company">By <span class="company-name">Google</span></p>
+        </div>
+        <div>
+          <p class="item-description">   
+          </p>
+        </div>
+      </div>
+      <div class="item-options text-center">
+        <div class="item-wrapper">
+          <div class="item-rating">
+            <div class="badge badge-primary badge-md">
+              <span>4</span> <i class="feather icon-star"></i>
+            </div>
+          </div>
+        <div class="item-cost">
+          <h6 class="item-price">
+          ${item.price} ${item.currency}
+          </h6>
+        </div>
+      </div>
+      <div class="cart">
+        <i class="feather icon-shopping-cart"></i> <span class="add-to-cart">Add to cart</span> <a
+          href="app-ecommerce-checkout" class="view-in-cart d-none">View In Cart</a>
+      </div>
+    </div>
+  </div></div>`;
+  $('#ecommerce-products').append(html);
+}
