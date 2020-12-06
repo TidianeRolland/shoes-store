@@ -29,7 +29,7 @@
             foreach($panier as $p) {
             $total += $p->qte * $p->price;
             }
-            $taxe = $total * 0.18;
+            $taxe = round($total * 0.18);
             @endphp
             @foreach(Session::get('cart') as $key => $item)
         <div class="card ecommerce-card">
