@@ -82,13 +82,20 @@ $(document).ready(function () {
   });
 
   // For View in cart
-  cart.on("click", function () {
+  $('#ecommerce-products').on('click', '.cart', function() {
     var $this = $(this),
       addToCart = $this.find(".add-to-cart"),
       viewInCart = $this.find(".view-in-cart");
+      let product_id = $this.attr('prod-id');
     if (addToCart.is(':visible')) {
-      addToCart.addClass("d-none");
-      viewInCart.addClass("d-inline-block");
+      sendItemToCart(product_id)
+      .then(() => {
+        addToCart.addClass("d-none");
+        viewInCart.addClass("d-inline-block");
+      }).catch(() => {
+        toastr.warning('Error', "Failed adding item to the cart.", { "positionClass": "toast-bottom-right" });
+      });
+      
     }
     else {
       var href = viewInCart.attr('href');
@@ -141,14 +148,14 @@ $(document).ready(function () {
       $(".checkout-tab-steps").steps("next", {});
     });
     // check if user has entered valid cvv
-    $(".btn-cvv").on("click", function () {
-      if ($(".input-cvv").val().length == 3) {
-        toastr.success('Success', 'Payment received Successfully', { "positionClass": "toast-bottom-right" });
-      }
-      else {
-        toastr.warning('Error', 'Please Enter Valid Details', { "positionClass": "toast-bottom-right" });
-      }
-    })
+    $("#btn-cvv").on("click", function () {
+      $("#btn-cvv").prop("disabled", true);
+      let fullname = $('#checkout-name').val();
+      toastr.success(`Thanks ${fullname} ! Payment received Successfully.`, { "positionClass": "toast-top-right" });
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 4000);
+    });
   }
 
   // checkout quantity counter
@@ -158,14 +165,15 @@ $(document).ready(function () {
   if (quantityCounter.length > 0) {
     quantityCounter.TouchSpin({
       min: CounterMin,
-      max: CounterMax
-    }).on('touchspin.on.startdownspin', function () {
+    }).on('touchspin.on.startdownspin', function (e) {
+      quantityUpdate.call(this);
       var $this = $(this);
       $('.bootstrap-touchspin-up').removeClass("disabled-max-min");
       if ($this.val() == 1) {
         $(this).siblings().find('.bootstrap-touchspin-down').addClass("disabled-max-min");
       }
-    }).on('touchspin.on.startupspin', function () {
+    }).on('touchspin.on.startupspin', function (e) {
+      quantityUpdate.call(this);
       var $this = $(this);
       $('.bootstrap-touchspin-down').removeClass("disabled-max-min");
       if ($this.val() == 10) {
@@ -174,9 +182,28 @@ $(document).ready(function () {
     });
   }
 
+  quantityCounter.on('blur', function () {
+    quantityUpdate.call(this);
+  })
+
   // remove items from wishlist page
   $(".remove-wishlist , .move-cart").on("click", function () {
+    let product_id = $(this).closest(".ecommerce-card").find('input.product_id').val();
     $(this).closest(".ecommerce-card").remove();
+    let that = this;
+
+    $.post("/removeItemFromCart", {product_id}, function(data, status) {
+      // err
+      if (data.statut == 'err') {
+        toastr.error("Oops! Failed while removing product.", 'Erreur!');
+      }
+      // success
+      if (data.statut == 'success') {
+        $(that).closest(".ecommerce-card").remove();
+        if (!$('.remove-wishlist').length) window.location.href = "/"; // panier vide
+        calculTotal();
+      }
+    });
   })
 
   // filter per categorie
@@ -250,7 +277,7 @@ function createCardItem(item) {
             </div>
           <div>
             <h6 class="item-price">
-            ${item.price} ${item.currency}
+            ${item.price.toLocaleString()} ${item.currency}
             </h6>
           </div>
         </div>
@@ -277,10 +304,46 @@ function createCardItem(item) {
         </div>
       </div>
       <div class="cart">
-        <i class="feather icon-shopping-cart"></i> <span class="add-to-cart">Add to cart</span> <a
-          href="app-ecommerce-checkout" class="view-in-cart d-none">View In Cart</a>
+        <i class="feather icon-shopping-cart"></i> <span class="add-to-cart ${ item.isInCart ? 'd-none' : '' }">Add to cart</span> <a
+          href="app-ecommerce-checkout" class="view-in-cart ${ item.isInCart ? '' : 'd-none' }">View In Cart</a>
       </div>
     </div>
   </div></div>`;
   $('#ecommerce-products').append(html);
+}
+
+function sendItemToCart(product_id) {
+  // add product to cart session
+  return new Promise((res, rej) => {
+    $.post("/addToCart", {product_id}, function(data, status) {
+      data.statut == 'success' ? res() : rej();
+    });
+
+  }); 
+}
+
+function calculTotal() {
+  let total = 0;
+  $('.ecommerce-card').each(function(i, obj) {
+    let qte = $(this).find('input.quantity-counter').val();
+    let pu = $(this).find('input.pu-item').val();
+    total += qte * pu;
+  });
+  let taxes = total * 0.18;
+  let totalTtc = total + taxes;
+  $('.pnet').text(total.toLocaleString());
+  $('.ptaxes').text(taxes.toLocaleString());
+  $('.pttc').text(totalTtc.toLocaleString());
+
+  return {total, taxes, totalTtc};
+}
+
+function quantityUpdate() {
+  let qte = parseInt($(this).closest('.item-quantity').find('input.quantity-counter:first').val());
+  let pu = parseInt($(this).closest('.item-quantity').find('input.pu-item:first').val());
+  if (!isNaN(qte)) {
+    let prix = qte * pu;
+    $(this).closest('.card-content').find('.item-price:first').text(`${prix.toLocaleString()} XOF`);
+  }
+  calculTotal();
 }

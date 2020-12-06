@@ -34,6 +34,18 @@ class EcommerceAppController extends Controller
         $shopRep = new ShopRepository;
         return $shopRep->getProductsWithFilter($data);      
     }
+    
+    public function addToCart(Request $req) {
+        $data = $req->all();
+        $shopRep = new ShopRepository;
+        return $shopRep->addToCart($data); 
+    }
+    
+    public function removeItemFromCart(Request $req) {
+        $data = $req->all();
+        $shopRep = new ShopRepository;
+        return $shopRep->removeItemFromCart($data);
+    }
 
     // Ecommerce Details
     public function ecommerce_details(){
@@ -74,12 +86,15 @@ class EcommerceAppController extends Controller
         ];
 
         $breadcrumbs = [
-            ['link'=>"dashboard-analytics",'name'=>"Home"],['link'=>"dashboard-analytics",'name'=>"eCommerce"], ['name'=>"Checkout"]
+            ['link'=>"/",'name'=>"Home"], ['name'=>"Checkout"]
         ];
-  
-        return view('/pages/app-ecommerce-checkout', [
-            'pageConfigs' => $pageConfigs,
-            'breadcrumbs' => $breadcrumbs
-        ]);
+
+        if (session()->has('cart') && sizeof(session()->get('cart')) > 0 ) {
+            return view('/pages/app-ecommerce-checkout', [
+                'pageConfigs' => $pageConfigs,
+                'breadcrumbs' => $breadcrumbs
+            ]);    
+        } else return redirect('/');
+        
     }
 }

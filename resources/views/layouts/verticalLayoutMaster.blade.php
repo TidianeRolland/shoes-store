@@ -11,7 +11,6 @@
     <div class="header-navbar-shadow"></div>
 
     {{-- Include Navbar --}}
-    @include('panels.navbar')
 
     @if(($configData['contentLayout']!=='default') && isset($configData['contentLayout']))
     <div class="content-area-wrapper">
@@ -48,9 +47,7 @@
   <!-- End: Content-->
 
   @if($configData['blankPage'] == false && isset($configData['blankPage']))
-  @include('pages/customizer')
 
-  @include('pages/buy-now')
   @endif
 
   <div class="sidenav-overlay"></div>

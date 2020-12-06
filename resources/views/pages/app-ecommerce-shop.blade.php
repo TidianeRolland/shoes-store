@@ -79,6 +79,9 @@ $configData = Helper::applClasses();
 
 <!-- Ecommerce Products Starts -->
 <section id="ecommerce-products" class="grid-view">
+  @php
+    $panier = Session::get('cart'); 
+  @endphp
   @foreach($products as $prod)
     <div class="card ecommerce-card">
       <div class="card-content">
@@ -88,20 +91,15 @@ $configData = Helper::applClasses();
           </div>
           <div class="card-body">
             <div class="item-wrapper">
-              <div class="item-rating">
-                <!-- <div class="badge badge-primary badge-md">
-                  <span>7</span> <i class="feather icon-star"></i>
-                </div> -->
-              </div>
+              
               <div>
                 <h6 class="item-price">
-                {{ $prod->price }} {{ $prod->currency }}
+                {{ number_format($prod->price,0,","," ") }} {{ $prod->currency }}
                 </h6>
               </div>
             </div>
             <div class="item-name">
               <span>{{ $prod->name }}</span>
-              <p class="item-company">By <span class="company-name">Google</span></p>
             </div>
             <div>
               <p class="item-description">
@@ -112,21 +110,11 @@ $configData = Helper::applClasses();
         <!-- </a> -->
         <div class="item-options text-center">
           <div class="item-wrapper">
-            <div class="item-rating">
-              <div class="badge badge-primary badge-md">
-                <span>4</span> <i class="feather icon-star"></i>
-              </div>
-            </div>
-            <div class="item-cost">
-              <h6 class="item-price">
-              {{ $prod->price }} {{ $prod->currency }}
-              </h6>
-            </div>
           </div>
           
-          <div class="cart">
-            <i class="feather icon-shopping-cart"></i> <span class="add-to-cart">Add to cart</span> <a
-              href="app-ecommerce-checkout" class="view-in-cart d-none">View In Cart</a>
+          <div class="cart" prod-id="{{ $prod->id }}">
+            <i class="feather icon-shopping-cart"></i> <span class="add-to-cart {{ $prod->isInCart ? 'd-none' : '' }}">Add to cart</span> <a
+              href="app-ecommerce-checkout" class="view-in-cart {{ $prod->isInCart ? '' : 'd-none' }}">View In Cart</a>
           </div>
         </div>
       </div>
