@@ -329,7 +329,7 @@ function calculTotal() {
     let pu = $(this).find('input.pu-item').val();
     total += qte * pu;
   });
-  let taxes = total * 0.18;
+  let taxes = Math.round(total * 0.18);
   let totalTtc = total + taxes;
   $('.pnet').text(total.toLocaleString());
   $('.ptaxes').text(taxes.toLocaleString());
