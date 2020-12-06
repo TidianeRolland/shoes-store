@@ -113,7 +113,7 @@
                 <div class="detail-title detail-total">Total TTC</div>
                 <div class="detail-amt total-amt pttc"> {{ number_format($total + $taxe,0,","," ") }} </div>
               </div>
-              <div class="btn btn-primary btn-block place-order">PLACE ORDER</div>
+              <div class="btn btn-primary btn-block place-order">CONTINUE</div>
             </div>
           </div>
         </div>

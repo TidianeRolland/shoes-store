@@ -14,10 +14,10 @@ class CategorieSeeder extends Seeder
     {
         DB::table('categories')->insert([
             ['name' => 'Baskets'],
-            ['name' => 'Souliers'],
+            ['name' => 'Shoes'],
             ['name' => 'Espadrilles'],
-            ['name' => 'Mocassins'],
-            ['name' => 'Sandales'],
+            ['name' => 'Loafers'],
+            ['name' => 'Sandals'],
         ]);
     }
 }

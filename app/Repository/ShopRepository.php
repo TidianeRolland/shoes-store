@@ -19,7 +19,7 @@ class ShopRepository {
     public function getProducts() {
         $resp = ['statut'=>'success'];
         try {
-            $products = Products::all();
+            $products = Products::orderBy('price', 'desc')->where('categorie_id', 1)->get();
             $cart = session()->get('cart');
             foreach ($products as $key => $prod) {
                 $isInCart = $cart && array_key_exists($prod->id, $cart);
